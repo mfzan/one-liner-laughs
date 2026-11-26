@@ -15,9 +15,8 @@ JOKE = (
 MAX_CHARS = 200
 
 
-def main() -> None:
-    os.umask(0o022)
-    line = JOKE
+def validate(line: str) -> str:
+    """Check the joke against the bounty gate; return it unchanged."""
     if not line.strip():
         raise SystemExit("joke line is empty")
     if len(line) > MAX_CHARS:
@@ -26,6 +25,14 @@ def main() -> None:
         )
     if "\n" in line or "\r" in line:
         raise SystemExit("joke must be a single line")
+    if any(ord(ch) < 0x20 for ch in line):
+        raise SystemExit("joke must not contain control characters")
+    return line
+
+
+def main() -> None:
+    os.umask(0o022)
+    line = validate(JOKE)
     out_path = os.environ.get("OUTPUT_PATH", "/output/entry.txt")
     parent = os.path.dirname(out_path)
     if parent:
